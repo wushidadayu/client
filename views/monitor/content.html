@@ -1,0 +1,216 @@
+<style type="text/css">
+    /* If you want you can use font-face */
+    .container {
+        width: 960px;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+
+    .clock {
+        width: 400px;
+        margin: 0 auto;
+        padding: 0px;
+        border: 0px;
+        /* border: 1px solid #333; */
+        color: #000000;
+        float: right;
+        /* background-color: black; */
+    }
+
+    #Date {
+        font-size: 24px;
+        text-align: center;
+        /* text-shadow: 0 0 5px #00c6ff; */
+        margin-right: 0px;
+    }
+
+    .clock ul {
+        width: 400px;
+        margin: 0 auto;
+        padding: 0px;
+        list-style: none;
+        text-align: center;
+    }
+
+    .clock ul li {
+        display: inline;
+        font-size: 20px;
+        text-align: center;
+        /*
+        font-family: 'BebasNeueRegular', Arial, Helvetica, sans-serif;
+        text-shadow: 0 0 5px #000000;
+        */
+    }
+
+    #point {
+        position: relative;
+        -moz-animation: mymove 1s ease infinite;
+        -webkit-animation: mymove 1s ease infinite;
+        padding-left: 1px;
+        padding-right: 1px;
+    }
+
+</style>
+
+<div id="myBreadcrumb">
+    <breadcrumb href="javascript:void(0)|javascript:void(0)" title="票务管理|票务监控" />
+</div>
+
+<div class="page-title">
+    <div class="clock fa">
+        <ul>
+            <li id="Date" class="fa"></li>
+            <li id="hours" class="fa"></li>
+            <li id="point" class="fa">:</li>
+            <li id="min" class="fa"></li>
+            <li id="point" class="fa">:</li>
+            <li id="sec" class="fa"></li>
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="alert alert-success" role="alert" style="display: none">
+            <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">×</span> <span class="sr-only">Close</span></button>
+            msg
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-body">
+
+                <form id="searchForm" class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-md-7 col-xs-13">
+                            <span class="label label-default label-form">总票数 {{count}}</span>
+                            <span class="label label-warning label-form">待推送 {{tst.length}}</span>
+                            <span class="label label-warning label-form">出票中 {{cpt.length}}</span>
+                            <span class="label label-danger label-form">问题票 {{yct.length}}</span>
+                        </div>
+                        <label class="col-md-1 control-label left">刷新频率: </label>
+                        <div class="col-md-3 col-xs-12">
+                            <label class="check" ><input type="radio" id="noflash" class="iradio reflash" value="0">
+                                不刷新</label>
+                            <label class="check" ><input type="radio" id="flash10" class="iradio reflash" value="10000">
+                                10秒</label>
+                            <label class="check" ><input type="radio" id="flash5" class="iradio reflash" checked value="5000">
+                                5秒</label>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <div class="panel panel-default" id="monitor-YC">
+            <div class="panel-heading ui-draggable-handle">
+                <div class="col-md-11" style="margin-left: 0px;padding-left: 0px">
+                    <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">异常票列表</h3>
+                </div>
+                <ul class="panel-controls">
+                    <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
+                </ul>
+            </div>
+            <div class="panel-body">
+                <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th>票ID</th>
+                        <th>彩种</th>
+                        <th>PC编号</th>
+                        <th>期号</th>
+                        <th>截止时间</th>
+                        <th>异常原因</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr v-for="w in yct">
+                        <td>{{w.ticketid}}</td>
+                        <td>{{w.typename}}</td>
+                        <td>{{w.pcid}}</td>
+                        <td>{{w.period}}</td>
+                        <td>{{w.endtime}}</td>
+                        <td><span class="label label-danger">{{w.except}}</span></td>
+                        <td>
+                            <button class="btn btn-default btn-rounded btn-sm"><span class="fa fa-pencil"></span></button>
+                            <button class="btn btn-danger btn-rounded btn-sm" onclick="delete_row('trow_1');"><span class="fa fa-times"></span></button>
+                        </td>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel panel-default" id="monitor-CP">
+            <div class="panel-heading ui-draggable-handle">
+                <div class="col-md-11" style="margin-left: 0px;padding-left: 0px">
+                    <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">出票中列表</h3>
+                </div>
+                <ul class="panel-controls">
+                    <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
+                </ul>
+            </div>
+            <div class="panel-body">
+                <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th>票ID</th>
+                        <th>彩种</th>
+                        <th>PC编号</th>
+                        <th>期号</th>
+                        <th>添加时间</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr v-for="w in cpt">
+                        <td>{{w.ticketid}}</td>
+                        <td>{{w.typename}}</td>
+                        <td>{{w.pcid}}</td>
+                        <td>{{w.period}}</td>
+                        <td>{{w.receivetime}}</td>
+                        <td>
+                            <button class="btn btn-default btn-rounded btn-sm"><span class="fa fa-pencil"></span></button>
+                            <button class="btn btn-danger btn-rounded btn-sm" onclick="delete_row('trow_1');"><span class="fa fa-times"></span></button>
+                        </td>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel panel-default" id="monitor-DCP">
+            <div class="panel-heading ui-draggable-handle">
+                <div class="col-md-11" style="margin-left: 0px;padding-left: 0px">
+                    <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">待出票列表</h3>
+                </div>
+                <ul class="panel-controls">
+                    <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
+                </ul>
+            </div>
+            <div class="panel-body">
+                <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th>票ID</th>
+                        <th>彩种</th>
+                        <th>PC编号</th>
+                        <th>期号</th>
+                        <th>出票时间</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr v-for="w in tst">
+                        <td>{{w.ticketid}}</td>
+                        <td>{{w.typename}}</td>
+                        <td>{{w.pcid}}</td>
+                        <td>{{w.period}}</td>
+                        <td>{{w.printtime}}</td>
+                        <td>
+                            <button class="btn btn-default btn-rounded btn-sm"><span class="fa fa-pencil"></span></button>
+                            <button class="btn btn-danger btn-rounded btn-sm" onclick="delete_row('trow_1');"><span class="fa fa-times"></span></button>
+                        </td>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
