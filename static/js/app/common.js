@@ -73,7 +73,6 @@ function showResult(vm, data, callback) {
     }
 }
 
-
 // 注销
 function logout() {
     // form validation

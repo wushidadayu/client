@@ -129,7 +129,8 @@ $(function() {
         //iCheckbox and iRadion - custom elements
         var feiCheckbox = function(){
             if($(".icheckbox").length > 0){
-                 $(".icheckbox,.iradio").iCheck({checkboxClass: 'icheckbox_minimal-grey',radioClass: 'iradio_minimal-grey'});
+                $(".icheckbox").not(".slave").iCheck({checkboxClass: 'icheckbox_minimal-grey'})
+                $(".iradio").iCheck({radioClass: 'iradio_minimal-grey'});
             }
         }
         // END iCheckbox

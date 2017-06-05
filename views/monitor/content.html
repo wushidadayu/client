@@ -78,14 +78,17 @@
 
         <div class="panel panel-default">
             <div class="panel-body">
-
+                <audio id="audio" autoplay="autoplay" loop="loop"
+                       src="/static/swf/baojing.mp3">
+                    你的浏览器不支持audio标签
+                </audio>
                 <form id="searchForm" class="form-horizontal" role="form">
                     <div class="form-group">
-                        <div class="col-md-7 col-xs-13">
+                        <div class="col-md-8 col-xs-13">
                             <span class="label label-default label-form">总票数 {{count}}</span>
-                            <span class="label label-warning label-form">待推送 {{tst.length}}</span>
-                            <span class="label label-warning label-form">出票中 {{cpt.length}}</span>
-                            <span class="label label-danger label-form">问题票 {{yct.length}}</span>
+                            <span class="label label-warning label-form">待推送 {{tst!=null?tst.length:0}}</span>
+                            <span class="label label-warning label-form">出票中 {{cpt!=null?cpt.length:0}}</span>
+                            <span class="label label-danger label-form">问题票 {{yct!=null?yct.length:0}}</span>
                         </div>
                         <label class="col-md-1 control-label left">刷新频率: </label>
                         <div class="col-md-3 col-xs-12">
@@ -108,13 +111,30 @@
                     <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">异常票列表</h3>
                 </div>
                 <ul class="panel-controls">
+                    <li><label class="switch">
+                        <input type="checkbox" id="ycRefresh" name="refreshButton" checked="" value="1">
+                        <span></span>
+                    </label></li>
                     <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
                 </ul>
             </div>
             <div class="panel-body">
+                <div class="form-group">
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(0, 'ycTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量设置成功">
+                        <span class="fa fa-check"></span></button>
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(1, 'ycTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量设置失败">
+                        <span class="fa fa-times"></span></button>
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(2, 'ycTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量设置限号">
+                        <span class="fa fa-ban"></span></button>
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(3, 'ycTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量重出">
+                        <span class="fa fa-repeat"></span></button>
+                </div>
                 <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
                     <thead>
                     <tr>
+                        <th>
+                            <input type="checkbox" class="icheckbox master" name="ycTicketid" id="ycSelectedAll" value="全选">
+                        </th>
                         <th>票ID</th>
                         <th>彩种</th>
                         <th>PC编号</th>
@@ -124,6 +144,9 @@
                         <th>操作</th>
                     </tr>
                     <tr v-for="w in yct">
+                        <td>
+                            <input type="checkbox" class="icheckbox slave" name="ycTicketid" value={{w.ticketid}}>
+                        </td>
                         <td>{{w.ticketid}}</td>
                         <td>{{w.typename}}</td>
                         <td>{{w.pcid}}</td>
@@ -131,8 +154,15 @@
                         <td>{{w.endtime}}</td>
                         <td><span class="label label-danger">{{w.except}}</span></td>
                         <td>
-                            <button class="btn btn-default btn-rounded btn-sm"><span class="fa fa-pencil"></span></button>
-                            <button class="btn btn-danger btn-rounded btn-sm" onclick="delete_row('trow_1');"><span class="fa fa-times"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(0, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="设置成功">
+                                <span class="fa fa-check"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(1, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="设置失败">
+                                <span class="fa fa-times"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(2, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="设置限号">
+                                <span class="fa fa-ban"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(3, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="重出">
+                                <span class="fa fa-repeat"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" data-toggle="modal" data-target="#modalTicketCompare" v-on:click="modalLoad(w.ticketid)" v-if="w.except=='对比失败'">详细</button>
                         </td>
                     </tr>
                     </thead>
@@ -150,25 +180,49 @@
                 </ul>
             </div>
             <div class="panel-body">
+                <div class="form-group">
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(0, 'cpTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量设置成功">
+                        <span class="fa fa-check"></span></button>
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(1, 'cpTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量设置失败">
+                        <span class="fa fa-times"></span></button>
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(2, 'cpTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量设置限号">
+                        <span class="fa fa-ban"></span></button>
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(3, 'cpTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量重出">
+                        <span class="fa fa-repeat"></span></button>
+                </div>
                 <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
                     <thead>
                     <tr>
+                        <th>
+                            <input type="checkbox" class="icheckbox master" name="cpTicketid" id="cpSelectedAll" value="全选">
+                        </th>
                         <th>票ID</th>
                         <th>彩种</th>
                         <th>PC编号</th>
                         <th>期号</th>
+                        <th>状态</th>
                         <th>添加时间</th>
                         <th>操作</th>
                     </tr>
                     <tr v-for="w in cpt">
+                        <td>
+                            <input type="checkbox" class="icheckbox slave" name="cpTicketid" value={{w.ticketid}}>
+                        </td>
                         <td>{{w.ticketid}}</td>
                         <td>{{w.typename}}</td>
                         <td>{{w.pcid}}</td>
                         <td>{{w.period}}</td>
+                        <td>{{{getStatus(w.state)}}}</td>
                         <td>{{w.receivetime}}</td>
                         <td>
-                            <button class="btn btn-default btn-rounded btn-sm"><span class="fa fa-pencil"></span></button>
-                            <button class="btn btn-danger btn-rounded btn-sm" onclick="delete_row('trow_1');"><span class="fa fa-times"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(0, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="设置成功">
+                                <span class="fa fa-check"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(1, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="设置失败">
+                                <span class="fa fa-times"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(2, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="设置限号">
+                                <span class="fa fa-ban"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(3, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="重出">
+                                <span class="fa fa-repeat"></span></button>
                         </td>
                     </tr>
                     </thead>
@@ -179,32 +233,56 @@
         <div class="panel panel-default" id="monitor-DCP">
             <div class="panel-heading ui-draggable-handle">
                 <div class="col-md-11" style="margin-left: 0px;padding-left: 0px">
-                    <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">待出票列表</h3>
+                    <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">待推送列表</h3>
                 </div>
                 <ul class="panel-controls">
                     <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
                 </ul>
             </div>
             <div class="panel-body">
+                <div class="form-group">
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(0, 'tsTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量设置成功">
+                        <span class="fa fa-check"></span></button>
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(1, 'tsTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量设置失败">
+                        <span class="fa fa-times"></span></button>
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(2, 'tsTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量设置限号">
+                        <span class="fa fa-ban"></span></button>
+                    <button class="btn btn-default btn-rounded btn-sm" v-on:click="BatchSetTicket(3, 'tsTicketid')" data-placement="top" data-toggle="tooltip" title="" data-original-title="批量重出">
+                        <span class="fa fa-repeat"></span></button>
+                </div>
                 <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
                     <thead>
                     <tr>
+                        <th>
+                            <input type="checkbox" class="icheckbox master" name="tsTicketid" id="tsSelectedAll" value="全选">
+                        </th>
                         <th>票ID</th>
                         <th>彩种</th>
                         <th>PC编号</th>
                         <th>期号</th>
                         <th>出票时间</th>
+                        <th>推送状态</th>
                         <th>操作</th>
                     </tr>
                     <tr v-for="w in tst">
+                        <td>
+                            <input type="checkbox" class="icheckbox slave" name="tsTicketid" value={{w.ticketid}}>
+                        </td>
                         <td>{{w.ticketid}}</td>
                         <td>{{w.typename}}</td>
                         <td>{{w.pcid}}</td>
                         <td>{{w.period}}</td>
                         <td>{{w.printtime}}</td>
+                        <td>{{{getPushState(w.zstate)}}}</td>
                         <td>
-                            <button class="btn btn-default btn-rounded btn-sm"><span class="fa fa-pencil"></span></button>
-                            <button class="btn btn-danger btn-rounded btn-sm" onclick="delete_row('trow_1');"><span class="fa fa-times"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(0, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="设置成功">
+                                <span class="fa fa-check"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(1, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="设置失败">
+                                <span class="fa fa-times"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(2, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="设置限号">
+                                <span class="fa fa-ban"></span></button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(3, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="重出">
+                                <span class="fa fa-repeat"></span></button>
                         </td>
                     </tr>
                     </thead>
@@ -213,4 +291,116 @@
         </div>
 
     </div>
+
+    <div class="modal fade bs-example-modal-lg" id="modalTicketCompare" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">【对比信息】{{ticketInfo.orderid}}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="comment-item col-md-6">
+                            <div class="panel panel-default" >
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-xs-12 control-label">彩种玩法:</label>
+                                        <div class="col-md-9 col-xs-12">
+                                            <span>{{ticketInfo.typename}}&nbsp;</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-xs-12 control-label">出票PC:</label>
+                                        <div class="col-md-9 col-xs-12">
+                                            <span>{{ticketInfo.pcnum}}&nbsp;</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-xs-12 control-label">赔率:</label>
+                                        <div class="col-md-9 col-xs-12">
+                                            <span>{{ticketInfo.printodds}}&nbsp;</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-4 col-xs-12 control-label">最高固定奖金:</label>
+                                        <div class="col-md-8 col-xs-12">
+                                            <span>{{ticketInfo.maxbonus}}&nbsp;</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>项</th>
+                                    <th>原始数据</th>
+                                    <th>出票数据</th>
+                                    <th>结果</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>倍数</td>
+                                    <td>{{ticketInfo.times}}</td>
+                                    <td>{{ticketInfo.printtimes}}</td>
+                                    <td><i class="fa fa-times" v-if="ticketInfo.times!=ticketInfo.printtimes"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>金额</td>
+                                    <td>{{ticketInfo.amount}}</td>
+                                    <td>{{ticketInfo.printamount}}</td>
+                                    <td><i class="fa fa-times" v-if="ticketInfo.amount!=ticketInfo.printamount"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>期号</td>
+                                    <td>{{ticketInfo.period}}</td>
+                                    <td>{{ticketInfo.printperiod}}</td>
+                                    <td><i class="fa fa-times" v-if="ticketInfo.period!=ticketInfo.printperiod"></i></td>
+                                </tr>
+                                <tr>
+                                    <td>注码</td>
+                                    <td>{{ticketInfo.schemecode}}</td>
+                                    <td>{{ticketInfo.printschemecode}}</td>
+                                    <td><i class="fa fa-times" v-if="ticketInfo.schemecode!=ticketInfo.printschemecode"></i></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="comment-item col-md-6">
+                            <div class="panel panel-primary" id="grid_block_9">
+                                <div class="panel-heading ui-draggable-handle ui-sortable-handle">
+                                    <h4 class="panel-title">票串信息</h4>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="panel-body scroll mCustomScrollbar _mCS_4 mCS-autoHide form-control" style="height: 350px;">
+                                        <div id="mCSB_4" class="mCustomScrollBox mCS-light mCSB_vertical mCSB_inside" tabindex="0">
+                                            <div id="mCSB_4_container" class="mCSB_container" style="position: relative; top: 0px; left: 0px;" dir="ltr">
+                                                <p v-html="ticketInfo.content"></p>
+                                            </div>
+                                            <div id="mCSB_4_scrollbar_vertical" class="mCSB_scrollTools mCSB_4_scrollbar mCS-light mCSB_scrollTools_vertical" style="display: block;">
+                                                <div class="mCSB_draggerContainer">
+                                                    <div id="mCSB_4_dragger_vertical" class="mCSB_dragger" style="position: absolute; min-height: 30px; display: block; height: 37px; max-height: 110px; top: 0px;" oncontextmenu="return false;">
+                                                        <div class="mCSB_dragger_bar" style="line-height: 30px;"></div>
+                                                    </div>
+                                                    <div class="mCSB_draggerRail"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" v-on:click="setTicketState(0, ticketInfo.orderid)" class="btn btn-default">标记成功</button>
+                    <button type="button" v-on:click="setTicketState(1, ticketInfo.orderid)" class="btn btn-default">标记失败</button>
+                    <button type="button" v-on:click="setTicketState(3, ticketInfo.orderid)" class="btn btn-default">重出</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+
 </div>
