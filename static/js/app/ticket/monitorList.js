@@ -19,8 +19,8 @@ $(document).ready(function () {
             timerIsOpen: true,
             isLoading: 0,
             statusMap: {
-                "1000": "未生成",
-                "1001": "未出票",
+                "1000": "未分票",
+                "1001": "待出票",
                 "1002": "出票中",
                 "1003": "对比失败",
                 "1004": "撤单",

@@ -140,6 +140,7 @@
                         <th>PC编号</th>
                         <th>期号</th>
                         <th>截止时间</th>
+                        <th>状态</th>
                         <th>异常原因</th>
                         <th>操作</th>
                     </tr>
@@ -152,6 +153,7 @@
                         <td>{{w.pcid}}</td>
                         <td>{{w.period}}</td>
                         <td>{{w.endtime}}</td>
+                        <td>{{{getStatus(w.state)}}}</td>
                         <td><span class="label label-danger">{{w.except}}</span></td>
                         <td>
                             <button class="btn btn-default btn-rounded btn-sm" v-on:click="setTicketState(0, w.ticketid)" data-placement="top" data-toggle="tooltip" title="" data-original-title="设置成功">
