@@ -1,0 +1,146 @@
+<ul class="breadcrumb">
+    <li class="active">票务兑奖</li>
+</ul>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <form id="searchForm" class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <div class="col-md-3 col-xs-13">
+                                <div class="col-md-12"><span>取票:</span><span id="get-prizes-label">关</span><label class="switch">
+                                <input type="checkbox" id="get-prizes" value="1">
+                                <span></span></label></div>
+                            </div>
+                            <div class="col-md-3 col-xs-13">
+                                <div class="col-md-12 col-xs-13"><span>总票数/剩余待兑奖</span><span class="label label-default label-form"><span id="total-count">0</span>/<span id="surplus-count">0</span></span></div>
+                                <div class="col-md-12 col-xs-13"><span>总金额/剩余待兑奖</span><span class="label label-warning label-form"><span id="total-prize">0</span>/<span id="surplus-prize">0</span></span></div>
+                            </div>
+                            <div class="col-md-3 col-xs-13">
+                                <div class="col-md-12 col-xs-13"><button type="button" class="btn btn-default btn-sm" v-on:click="refreshPrize()">重新兑奖</button></div>
+                                <div class="col-md-12 col-xs-13"><button type="button" class="btn btn-default btn-sm" v-on:click="prizeOver()">兑奖结束</button></div>
+                            </div>
+                            <div class="col-md-3 col-xs-12">
+                                <label class="col-md-12 col-xs-12">刷新频率: </label>
+                                <label>&nbsp;&nbsp;</label>
+                                <label class="check" ><input type="radio" id="noflash" class="iradio reflash" value="0">
+                                    不刷新</label>
+                                <label class="check" ><input type="radio" id="flash10" class="iradio reflash" value="10000">
+                                    10秒</label>
+                                <label class="check" ><input type="radio" id="flash5" class="iradio reflash" checked value="5000">
+                                    5秒</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="panel panel-default" id="prize-CJ">
+                <div class="panel-heading ui-draggable-handle">
+                    <div class="col-md-8" style="margin-left: 0px;padding-left: 0px">
+                        <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">兑奖彩机列表</h3>
+                    </div>
+                    <ul class="panel-controls">
+                        <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
+                    </ul>
+                </div>
+                <div class="panel-body">
+                    数量: {{mydata.cjs.length}}
+                    <div class="dataTables_filter">
+                        <label><button id="AssignFlag-button" type="button" class="btn btn-default btn-sm" v-on:click="prizeStart(!mydata.assignswitch)">开始兑奖</button></label>
+                    </div>
+                    <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
+                        <thead>
+                        <tr>
+                            <th>彩机编号</th>
+                            <th>PC编号</th>
+                            <th>已兑张数</th>
+                            <th>已兑金额</th>
+                            <th>分配待兑张数</th>
+                        </tr>
+                        <tr v-for="w in mydata.cjs">
+                            <td>{{w.cjnum}}</td>
+                            <td>{{w.pcnum}}</td>
+                            <td>{{w.overcount}}</td>
+                            <td>{{w.overprize}}</td>
+                            <td>{{w.waitcount}}</td>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel panel-default" id="prize-YC">
+                <div class="panel-heading ui-draggable-handle">
+                    <div class="col-md-8" style="margin-left: 0px;padding-left: 0px">
+                        <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">兑奖异常票</h3>
+                    </div>
+                    <ul class="panel-controls">
+                        <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
+                    </ul>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
+                        <thead>
+                        <tr>
+                            <th>票ID</th>
+                            <th>金额</th>
+                            <th>票号</th>
+                            <th>兑奖彩机</th>
+                            <th>信息</th>
+                            <th>操作</th>
+                        </tr>
+                        <tr v-for="w in mydata.yct">
+                            <td>{{w.orderid}}</td>
+                            <td>{{w.amount}}</td>
+                            <td>{{w.ticketnum}}</td>
+                            <td>{{w.cjname}}</td>
+                            <td><span class="label label-danger">{{w.ticketinfo}}</span></td>
+                            <td>
+                                <div class="form-group">
+                                    <button class="btn btn-default btn-rounded btn-sm edit-refresh" v-on:click="setPrizeRefresh(w.orderid)">重兑</button>
+                                    <button class="btn btn-default btn-rounded btn-sm edit-refresh" v-on:click="setPrizeOk(w.orderid)">已兑</button>
+                                </div>
+                            </td>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+
+            <!-- START DEFAULT DATATABLE -->
+            <div class="panel panel-default">
+                <div class="panel-heading ui-draggable-handle">
+                    <div class="col-md-8" style="margin-left: 0px;padding-left: 0px">
+                        <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">兑奖票信息</h3>
+                    </div>
+                    <ul class="panel-controls">
+                        <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
+                    </ul>
+                </div>
+                <div class="panel-body">
+                    <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper no-footer">
+                        <div id="DataTables_Table_0_filter" class="dataTables_filter">
+                            <label>票ID:<input type="search" class="form-control" id="search-ticketid" placeholder="回车开始查询" aria-controls="DataTables_Table_0"></label>
+                        </div>
+                        <table id="prizeTableList" class="table datatable table-striped table-bordered" cellspacing="0" width="100%">
+                            <thead>
+                            <tr role="row">
+                                <th>票ID</th>
+                                <th>状态</th>
+                                <th>添加时间</th>
+                                <th>金额</th>
+                                <th>票号</th>
+                                <th>类型</th>
+                                <th>兑奖PC</th>
+                                <th>兑奖彩机</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                         </table>
+                    </div>
+                </div>
+            </div>
+            <!-- END SIMPLE DATATABLE -->
+        </div>
+    </div>

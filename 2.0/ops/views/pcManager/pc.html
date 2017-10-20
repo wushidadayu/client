@@ -1,0 +1,130 @@
+<ul class="breadcrumb">
+    <li class="active">PC管理</li>
+</ul>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <form id="searchForm" class="form-horizontal" role="form">
+                    <div class="form-group">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- START DEFAULT DATATABLE -->
+        <div class="panel panel-default">
+            <div class="panel-heading ui-draggable-handle">
+                <div class="col-md-8" style="margin-left: 0px;padding-left: 0px">
+                    <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">PC列表</h3>
+                </div>
+                <ul class="panel-controls">
+                    <li><a href="#" class="panel-refresh"><span class="fa fa-refresh"></span></a></li>
+                </ul>
+            </div>
+            <div class="panel-body">
+                列表总数：<span>{{pcl.length}}</span>
+                <div id="DataTables_Table_0_filter" class="dataTables_filter">
+                    <label>
+                        <input type="number" class="form-control" id="addpc-num" placeholder="序号(1~999)">
+                        <button type="button" class="btn btn-default" v-on:click="pcInsert()">添加PC</button>
+                    </label>
+                </div>
+                <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th>PC编号</th>
+                        <th>出票彩机数</th>
+                        <th>兑奖彩机数</th>
+                        <th>是否在线</th>
+                        <th>状态</th>
+                        <th>出票模式</th>
+                        <th>出票类型</th>
+                        <th>金额分票</th>
+                        <th>金额范围</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr v-for="w in pcl">
+                        <td>{{w.pcnum}}</td>
+                        <td>{{w.printCjcount}}</td>
+                        <td>{{w.prizeCjcount}}</td>
+                        <td>{{onlineMap[w.online]}}</td>
+                        <td>{{stateMap[w.state]}}</td>
+                        <td>{{printmodeMap[w.printmode]}}</td>
+                        <td>{{w.printtype}}</td>
+                        <td>{{amountflagMap[w.amountflag]}}</td>
+                        <td>{{w.amountrange}}</td>
+                        <td>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="loadPcInfoMode(w.id)">修改</button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="pcDelete(w.id)">删除</button>
+                        </td>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <!-- END SIMPLE DATATABLE -->
+    </div>
+
+    <div class="modal fade bs-example-modal-lg" id="modalPcEdit" data-keyboard="false" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" v-on:click="closePcInfoMode"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">【PC修改】{{pcInfo.id}}</h4>
+                </div>
+
+                <form class="form-horizontal">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="col-md-3 col-xs-12 control-label">PC编号</label>
+                            <div class="col-md-6 col-xs-12">
+                                <input type="text" class="form-control" v-model.trim="pcInfo.pcnum">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-3 col-xs-12 control-label">出票模式</label>
+                            <div class="col-md-6 col-xs-12">
+                                <select id="pcedit-printmode" class="form-control select">
+                                    <option v-for="(k,v) in printmodeMap" v-bind:value="k">{{v}}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-3 col-xs-12 control-label">彩种类型</label>
+                            <div class="col-md-6 col-xs-12">
+                                <select id="pcedit-printtype" multiple="multiple" class="form-control select">
+                                    <option v-for="(k,v) in lotteryClass" v-bind:value="k">{{v}}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-3 col-xs-12 control-label">金额分票</label>
+                            <div class="col-md-6 col-xs-12">
+                                <input type="checkbox" id="pcedit-amountflag" v-model="pcInfo.amountflag">
+                                <label for="pcedit-amountflag">{{ amountflagMap[pcInfo.amountflag] }}</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-3 col-xs-12 control-label">金额范围</label>
+                            <div class="col-md-6 col-xs-12">
+                                <div class="col-md-4 col-xs-12"><input class="form-control" type="number" v-model.number="pcInfo.amountleft"></div>
+                                <div class="col-md-1 col-xs-12">-</div>
+                                <div class="col-md-4 col-xs-12"><input class="form-control" type="number" v-model.number="pcInfo.amountright"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" v-on:click="editPcInfo()">保存</button>
+                        <button type="button" class="btn btn-default" v-on:click="closePcInfoMode()">关闭</button>
+                    </div>
+                </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+</div>

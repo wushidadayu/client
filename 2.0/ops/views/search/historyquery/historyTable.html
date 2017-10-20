@@ -1,0 +1,152 @@
+
+<style>
+    .tooltip-inner {
+        max-width: 370px;
+        padding: 3px 8px;
+        color: #020202;
+        text-align: left;
+        text-decoration: none;
+        background-color: #ddd;
+        border-radius: 4px;
+    }
+</style>
+
+<ul class="breadcrumb">
+    <li class="active">历史票查询</li>
+</ul>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label class="col-md-2 col-xs-12 control-label">彩票状态</label>
+                            <div class="col-md-8 col-xs-12">
+                                <select id="states" class="form-control select"  style="display: none;">
+                                    <option v-for="(k,v) in states" v-bind:value="k">{{v}}</option>
+                                </select>
+                                <span class="help-block">注：单选</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label class="col-md-2 col-xs-12 control-label">彩种名称</label>
+                            <div class="col-md-8 col-xs-12">
+                                <select id="lotteryNums" class="form-control select" multiple="multiple" style="display: none;">
+                                    <option v-for="num in lotteryNums" v-bind:value="num.Lotterynum">{{num.Lotterybname}}</option>
+
+                                </select>
+                                <span class="help-block">注：多选，空选择默认为全选！</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">起止日期</label>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input type="text" class="form-control mydatepicker" id="startTime">
+                                </div>
+                                <span class="help-block">注：含起始日期</span>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input type="text" class="form-control mydatepicker" id="endTime">
+                                </div>
+                                <span class="help-block">注：含结束日期</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">彩票ID</label>
+                            <div class="col-md-7">
+                                <div class="input-group">
+                                    <input type="number" class="form-control " v-model="orderid" >
+                                </div>
+                                <span class="help-block">注：当ID存在，忽略其它查询条件！</span>
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-primary pull-right"  v-on:click="search()">查询</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- START DEFAULT DATATABLE -->
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <table id="mytable" class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th>票ID</th>
+                        <th>时间信息</th>
+                        <th>票面信息</th>
+                        <th>彩种_玩法</th>
+                        <th>设备编号</th>
+                        <th>彩票状态</th>
+                        <th>状态信息</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr v-for="item in sts">
+                        <td>{{item.Orderid}}</td>
+                        <td>
+                            接收时间：{{item.Receivetime | dateFormat}}<br/>
+                            出票时间：{{item.Printouttime | dateFormat}}
+                        </td>
+                        <td>
+                            倍数：{{item.Times}}<br/>
+                            金额：{{item.Amount}}<br/>
+                            期号：{{item.Lotteryperiod}}
+                        </td>
+
+                        <td>{{item.Typename+"_"+item.Passmodename}}</td>
+                        <td>
+                            PC机：{{item.Pc_num}}<br/>
+                            彩机：{{item.Cj_num}}
+                        </td>
+                        <td><span class="label " v-bind:class="[item.State==102 ? 'label-success':'label-danger']">{{statesInfo[item.State]}}</span></td>
+                        <td>{{item.Ticketinfo}}</td>
+                        <td>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="getContent(item.Orderid)">查看</button>
+                        </td>
+                    </tr>
+                    </thead>
+                </table>
+                <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate">
+                    <a class="paginate_button previous disabled" aria-controls="DataTables_Table_0" data-dt-idx="0" tabindex="0" v-on:click="provious()"  v-show="proviou">上一页</a>
+                    <span>
+                        <a  v-for="item in pageArray"  class="paginate_button "  v-bind:class="{ 'current': item==pageNum}"  aria-controls="DataTables_Table_0" data-dt-idx={{item}} tabindex="0"  v-on:click="choice(item)"  >{{item}}</a>
+                    </span>
+                    <a class="paginate_button next" aria-controls="DataTables_Table_0" data-dt-idx="7" tabindex="0"   v-on:click="nexts()"  v-show="next">下一页</a>
+                </div>
+            </div>
+        </div>
+        <!-- END SIMPLE DATATABLE -->
+    </div>
+</div>
+
+<div class="modal fade bs-example-modal-lg" id="modalPcEdit" data-keyboard="false" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" v-on:click="closeContent()"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">【彩票内容查看】</h4>
+            </div>
+
+            <div class="modal-body">
+                <div   id="spContext">
+
+                </div>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>

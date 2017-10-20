@@ -1,0 +1,90 @@
+
+<style>
+    .tooltip-inner {
+        max-width: 370px;
+        padding: 3px 8px;
+        color: #020202;
+        text-align: left;
+        text-decoration: none;
+        background-color: #ddd;
+        border-radius: 4px;
+    }
+</style>
+
+<ul class="breadcrumb">
+    <li class="active">票务统计查询</li>
+</ul>
+
+<div class="row">
+    <div class="col-md-12">
+
+        <div class="panel panel-default">
+                    <div class="panel-body">
+
+                        <div class="row">
+
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label class="col-md-3 control-label">起始日期</label>
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+                                            <input type="text" class="form-control datepicker" v-model="stateDate">
+                                        </div>
+                                        <span class="help-block">注：含起始日期</span>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="col-md-3">
+
+                                <div class="form-group">
+                                    <label  class="col-md-3 control-label">结束日期</label>
+                                    <div class="col-md-8">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><span class="fa fa-calendar"></span></span>
+                                            <input type="text" class="form-control datepicker" v-model="endDate">
+                                        </div>
+                                        <span class="help-block">注：含结束日期</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-primary pull-right"  v-on:click="getQueryCount()">查询</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+        <!-- START DEFAULT DATATABLE -->
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <span>注： 共计出票：{{cjCount.Num }}张，出票金额：{{cjCount.Amount  | currency '' '2'}}元。</span>
+                <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>PC编号</th>
+                        <th>CJ编号</th>
+                        <th>出票数(张)</th>
+                        <th>总金额(元)</th>
+
+                    </tr>
+                    <tr v-for="(index,per) in cjCount.CjCounts">
+
+                        <td>{{index+1}}</td>
+                        <td>{{per.PC_Num}}</td>
+                        <td>{{per.CJ_Num}}</td>
+                        <td>{{per.PrintNum}}</td>
+                        <td>{{per.TotalAmount | currency '' '2'}}</td>
+
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <!-- END SIMPLE DATATABLE -->
+    </div>
+</div>

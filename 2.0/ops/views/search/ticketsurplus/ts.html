@@ -1,0 +1,79 @@
+<ul class="breadcrumb">
+    <li class="active">多出票</li>
+</ul>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <form id="searchForm" class="form-horizontal" role="form">
+                    <div class="form-group">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- START DEFAULT DATATABLE -->
+        <div class="panel panel-default">
+            <div class="panel-heading ui-draggable-handle">
+                <div class="col-md-8" style="margin-left: 0px;padding-left: 0px">
+                    <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">多余票列表</h3>
+                </div>
+                <ul class="panel-controls">
+                    <li v-on:click="initConditions"><a href="javascript:void(0)" class="panel-refresh" ><span class="fa fa-refresh"></span></a></li>
+                </ul>
+            </div>
+            <div class="panel-body">
+                列表总数：<span>{{tsl.length}}</span>
+
+                <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th>票ID</th>
+                        <th>出票时间</th>
+                        <th>倍数</th>
+                        <th>金额</th>
+                        <th>期号</th>
+                        <th>彩种_玩法</th>
+                        <th>pc</th>
+                        <th>彩机</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr v-for="t in tsl">
+                        <td>{{t.Orderid}}</td>
+                        <td>{{t.Printouttime | dateFormat}}</td>
+                        <td>{{t.Times}}</td>
+                        <td>{{t.Amount}}</td>
+                        <td>{{t.Lotteryperiod}}</td>
+                        <td>{{t.Typename +"_"+ t.Passmodename}}</td>
+                        <td>{{t.Pc_num}}</td>
+                        <td>{{t.Cj_num}}</td>
+                        <td>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="scanContext(t)">查看</button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="tsDelete(t.Id)">删除</button>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="downloadSource(t.Orderid)">下载</button>
+                        </td>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <!-- END SIMPLE DATATABLE -->
+    </div>
+
+    <div class="modal fade bs-example-modal-lg" id="modalPcEdit" data-keyboard="false" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" v-on:click="closeContext"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">【多余票查看】</h4>
+                </div>
+
+                <div class="modal-body">
+                        <div   id="tsContext">
+
+                        </div>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+</div>
