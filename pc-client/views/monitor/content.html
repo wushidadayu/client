@@ -1,0 +1,408 @@
+<style type="text/css">
+    /* If you want you can use font-face */
+    .container {
+        width: 960px;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+
+    .clock {
+        width: 400px;
+        margin: 0 auto;
+        padding: 0px;
+        border: 0px;
+        /* border: 1px solid #333; */
+        color: #000000;
+        float: right;
+        /* background-color: black; */
+    }
+
+    #Date {
+        font-size: 24px;
+        text-align: center;
+        /* text-shadow: 0 0 5px #00c6ff; */
+        margin-right: 0px;
+    }
+
+    .clock ul {
+        width: 400px;
+        margin: 0 auto;
+        padding: 0px;
+        list-style: none;
+        text-align: center;
+    }
+
+    .clock ul li {
+        display: inline;
+        font-size: 20px;
+        text-align: center;
+        /*
+        font-family: 'BebasNeueRegular', Arial, Helvetica, sans-serif;
+        text-shadow: 0 0 5px #000000;
+        */
+    }
+
+    #point {
+        position: relative;
+        -moz-animation: mymove 1s ease infinite;
+        -webkit-animation: mymove 1s ease infinite;
+        padding-left: 1px;
+        padding-right: 1px;
+    }
+    .waitTicket{
+        font-size: medium;
+    }
+    .tooltip-inner {
+        max-width: 370px;
+        padding: 3px 8px;
+        color: #020202;
+        text-align: left;
+        text-decoration: none;
+        background-color: #ddd;
+        border-radius: 4px;
+    }
+</style>
+
+<div id="myBreadcrumb">
+    <breadcrumb href="javascript:void(0)" title="出票监控" />
+</div>
+
+<div class="page-title">
+    <div class="clock fa">
+        <ul>
+            <li id="Date" class="fa"></li>
+            <li id="hours" class="fa"></li>
+            <li id="point" class="fa">:</li>
+            <li id="min" class="fa"></li>
+            <li id="point" class="fa">:</li>
+            <li id="sec" class="fa"></li>
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="alert alert-success" role="alert" style="display: none">
+            <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">×</span> <span class="sr-only">Close</span></button>
+            msg
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <audio id="audio" autoplay="autoplay" loop="loop"
+                       src="/static/swf/baojing.mp3">
+                    你的浏览器不支持audio标签
+                </audio>
+                <form id="searchForm" class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-md-3 col-xs-12">
+                            <span>出票:</span><span id="print-tickets-label">开</span><label class="switch">
+                                <input type="checkbox" id="print-tickets" class="tickets-flag" checked value="1">
+                                <span></span>
+                            </label>&nbsp;
+                        </div>
+                        <div class="col-md-6 col-xs-12">
+                        </div>
+                        <div class="col-md-3 col-xs-12">
+                            <span class="control-label left">刷新频率: </span>
+                            <label class="check" ><input type="radio" id="noflash" class="iradio reflash" value="0">
+                                不刷新</label>
+                            <label class="check" ><input type="radio" id="flash10" class="iradio reflash" value="10000">
+                                10秒</label>
+                            <label class="check" ><input type="radio" id="flash5" class="iradio reflash" checked value="5000">
+                                5秒</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="panel panel-default" id="cjState">
+            <div class="panel-body">
+                <h4>彩机在线：{{cjinfo.cjs.length}}</h4>
+                <ul class="panel-controls">
+                    <li><button class="btn btn-default btn-rounded btn-sm" v-on:click="batchSet(1)">全部启动</button></li>
+                    <li><button class="btn btn-default btn-rounded btn-sm" v-on:click="batchSet(0)">全部停止</button></li>&nbsp;
+                    <li><button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" data-placement="left" title="" data-html=true
+                                data-original-title=">开关：停止/开始出票或兑奖<br/>>键盘：操作键盘,彩机有票的时候软键盘会失效<br/>>回送：回送票到同pc下其他彩机上<br/>>限号：标记票限号<br/>>重分主机：将票返回主机重新分配pc出<br/>>重出该票：重新开始出彩机上的该张票">操作帮助</button></li>
+                </ul>
+                <table class="table table-hover" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th style="width: 8%">编号</th>
+                        <th style="width: 12%">票ID</th>
+                        <th style="width: 12%">玩法</th>
+                        <th style="width: 7%">金额</th>
+                        <th style="width: 7%">模式</th>
+                        <th style="width: 7%">状态</th>
+                        <th style="width: 7%">等待时间</th>
+                        <th style="width: 17%">故障信息</th>
+                        <th style="width: 23%">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="w in cjinfo.cjs">
+                        <td>{{w.no}}：{{w.name}}</td>
+                        <td>{{w.orderid}}</td>
+                        <td>{{w.play}}</td>
+                        <td>{{w.amount}}</td>
+                        <td>
+                            <div v-if="w.mode == 1">
+                                <span class="label label-info">{{modeMap[w.mode]}}</span>
+                            </div>
+                            <div v-else>
+                                <span class="label label-default">{{modeMap[w.mode]}}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div v-if="w.state == 1">
+                                <span class="label label-success">{{stateMap[w.state]}}</span>
+                            </div>
+                            <div v-else>
+                                <span class="label label-default">{{stateMap[w.state]}}</span>
+                            </div>
+                        </td>
+                        <td>{{w.waittime}}</td>
+                        <td><span class="label label-danger">{{w.faultinfo}}</span></td>
+                        <td>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="cjswitch(w.name, w.state==1?0:1)">
+                                开关</button>
+                            <button style="background: #f5f5f5" class="btn btn-default btn-rounded btn-sm" data-toggle="modal" data-target="#modelkeyboard" v-on:click="modalLoad(w.name)">
+                                键盘</button>
+                            <button style="background: #eee" class="btn btn-default btn-rounded btn-sm" v-on:click="cjOperate(w.name, 2, w.orderid)" v-if="w.orderid !=''">
+                                回送</button>
+                            <button style="background: #e5e5e5" class="btn btn-default btn-rounded btn-sm" v-on:click="cjOperate(w.name, 3, w.orderid)" v-if="w.orderid !=''">
+                                限号</button>
+                            <button style="background: #ddd" class="btn btn-default btn-rounded btn-sm" v-on:click="cjOperate(w.name, 1, w.orderid)" v-if="w.orderid !=''">
+                                重分主机</button>
+                            <button style="background: #d5d5d5" class="btn btn-default btn-rounded btn-sm" v-on:click="cjOperate(w.name, 4, w.orderid)" v-if="w.orderid !=''">
+                                重出该票</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel panel-default" id="Ticket">
+            <div class="panel-heading ui-draggable-handle">
+                <div class="col-md-8" style="margin-left: 0px;padding-left: 0px">
+                    <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">待出票</h3>
+                </div>
+                <ul class="panel-controls">
+                    <li><a href="#" class="panel-collapse"><span class="fa fa-angle-down"></span></a></li>
+                </ul>
+            </div>
+            <div class="panel-body">
+
+                <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th>福彩(张)</th>
+                        <th>体彩(张)</th>
+                        <th>竞彩(张)</th>
+                        <th>单场(张)</th>
+                        <th>高频(张)</th>
+                        <th>批量操作(张)</th>
+                    </tr>
+                    <tr>
+                        <td><span class="waitTicket">{{cjinfo.typecount.fucai}}</span>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="rePrintTicket(['1'])" data-placement="top" data-toggle="tooltip" title="" data-original-title="福彩待出票重出">
+                                <span class="glyphicon glyphicon-repeat"></span></button>
+                        </td>
+                        <td><span class="waitTicket">{{cjinfo.typecount.ticai}}</span>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="rePrintTicket(['2'])" data-placement="top" data-toggle="tooltip" title="" data-original-title="体彩待出票重出">
+                                <span class="glyphicon glyphicon-repeat"></span></button>
+                        </td>
+                        <td><span class="waitTicket">{{cjinfo.typecount.jincai}}</span>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="rePrintTicket(['3'])" data-placement="top" data-toggle="tooltip" title="" data-original-title="竟彩待出票重出">
+                                <span class="glyphicon glyphicon-repeat"></span></button>
+                        </td>
+                        <td><span class="waitTicket">{{cjinfo.typecount.danchang}}</span>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="rePrintTicket(['4'])" data-placement="top" data-toggle="tooltip" title="" data-original-title="单场待出票重出">
+                                <span class="glyphicon glyphicon-repeat"></span></button>
+                        </td>
+                        <td><span class="waitTicket">{{cjinfo.typecount.gaoping}}</span>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="rePrintTicket(['5'])" data-placement="top" data-toggle="tooltip" title="" data-original-title="高频待出票重出">
+                                <span class="glyphicon glyphicon-repeat"></span></button>
+                        </td>
+
+                        <td>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="rePrintTicket(['1','2','3','4','5'])" data-placement="top" data-toggle="tooltip" title="" data-original-title="所有待出票重出">
+                                <span class="glyphicon glyphicon-repeat"></span></button>
+
+                        </td>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal fade bs-example-modal-lg" id="modelkeyboard" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">【模拟键盘】{{keycjname}}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                                <div id="keyboard-info" class="alert alert-success alert-success alert-danger" role="alert">
+                                    <strong id="keyboard-info-text"> </strong>
+                                </div>
+                        <div class="panel panel-default col-md-12" >
+                            <div class="panel-body">
+                                <div class="comment-item col-md-3">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Ins')">Ins</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F01')">F1</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F02')">F2</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F03')">F3</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'End')">End</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F04')">F4</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F05')">F5</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F06')">F6</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Del')">Del</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F07')">F7</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F08')">F8</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F09')">F9</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Menu')">菜单</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F10')">F10</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F11')">F11</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'F12')">F12</button>&nbsp;
+                                    </div>
+                                </div>
+                                <div class="comment-item col-md-3">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-6" v-on:click="sendKeyBoard(keycjname, 'Copy')">复制票</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Fastplay')">快打</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Cancel')">取消</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-6" v-on:click="sendKeyBoard(keycjname, 'Printtest')">打印样票</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K1')">K1</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K2')">K2</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-6" v-on:click="sendKeyBoard(keycjname, 'Clearsum')">清除合计</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K3')">K3</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K4')">K4</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-6" v-on:click="sendKeyBoard(keycjname, 'Against')">对阵表</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K5')">K5</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Prize')">兑奖</button>&nbsp;
+                                    </div>
+                                </div>
+                                <div class="comment-item col-md-3">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Reelect')">重选</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Bp')">退格</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-6" v-on:click="sendKeyBoard(keycjname, 'Game*')">游戏*</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '/')">/</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Tab')">Tab</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-6" v-on:click="sendKeyBoard(keycjname, 'Auto1')">机选一注</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '+')"> + </button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'U_A')"> ↑ </button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-6" v-on:click="sendKeyBoard(keycjname, 'Auto5')">机选五注</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'L_A')">←</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'D_A')">↓</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'R_A')">→</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '-')">-</button>&nbsp;
+                                    </div>
+                                </div>
+                                <div class="comment-item col-md-3">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '7')">7</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '8')">8</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '9')">9</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Esc')">Esc</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '4')">4</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '5')">5</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '6')">6</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Y')">Y</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '1')">1</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '2')">2</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '3')">3</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Z')">Z</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-6" v-on:click="sendKeyBoard(keycjname, '0')">0</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '.')">.</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'Ent')">确定</button>&nbsp;
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default col-md-12" >
+                            <div class="panel-body">
+                                <div class="comment-item col-md-3">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K6')">K6</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K7')">K7</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K8')">K8</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K9')">K9</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '=')">=</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, ';')">;</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, ',')">,</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '`')">`</button>&nbsp;
+                                    </div>
+                                </div>
+                                <div class="comment-item col-md-3">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K10')">K10</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K11')">K11</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K12')">K12</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K13')">K13</button>&nbsp;
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '[')">[</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, ']')">]</button>&nbsp;
+                                    </div>
+                                </div>
+                                <div class="comment-item col-md-3">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, 'K14')">K14</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-3" v-on:click="sendKeyBoard(keycjname, '\')">\</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-6" v-on:click="sendKeyBoard(keycjname, 'Pageup')">Page Up</button>&nbsp;
+                                    </div>
+                                </div>
+                                <div class="comment-item col-md-3">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-default col-md-6" v-on:click="sendKeyBoard(keycjname, 'Pagedown')">Page Down</button>&nbsp;
+                                        <button type="button" class="btn btn-default col-md-6" v-on:click="sendKeyBoard(keycjname, 'Capsl')">Caps L</button>&nbsp;
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+
+</div>

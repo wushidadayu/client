@@ -1,0 +1,156 @@
+<ul class="breadcrumb">
+    <li class="active">彩机管理</li>
+</ul>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <form id="searchForm" class="form-horizontal" role="form">
+                    <div class="form-group">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- START DEFAULT DATATABLE -->
+        <div class="panel panel-default">
+            <div class="panel-heading ui-draggable-handle">
+                <div class="col-md-8" style="margin-left: 0px;padding-left: 0px">
+                    <h3 class="panel-title col-md-10" style="margin-left: 0px;padding-left: 5px">彩机管理</h3>
+                </div>
+                <ul class="panel-controls">
+                    <li><a href="#" class="panel-refresh"><span class="fa fa-refresh"></span></a></li>
+                </ul>
+            </div>
+            <div class="panel-body">
+                列表总数：<span>{{cjlist.length}}</span>
+
+                <ul class="panel-controls">
+                    <li><strong>批量操作：</strong></li>
+                    <li>
+                        <select class="form-control select" id="cjBatchCtlModeSelect" mydata="w.name">
+                            <option value="-1">模式</option>
+                            <option value="1">出票</option>
+                            <option value="2">兑奖</option>
+                        </select>
+                    </li>
+                    <li>
+                        <select class="form-control select" id="cjBatchCtlOperatorSelect">
+                            <option value="-1">操作</option>
+                            <option value="1">启用</option>
+                            <option value="2">禁用</option>
+                            <option value="3">控制外设</option>
+                            <option value="4">复原外设</option>
+                            <option value="5">登录</option>
+                            <option value="6">关机</option>
+                            <option value="7">删除</option>
+                        </select>
+                    </li>
+                    <li><button type="button" class="btn btn-default" v-on:click="loadCjInfoMode('', 1)">添加彩机</button></li>
+                </ul>
+                <table class="table table-bordered table-striped table-actions" cellspacing="0" width="100%">
+                    <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" class="icheckbox master" name="cjselect" id="cjAll" value="全选">
+                        </th>
+                        <th>序号</th>
+                        <th>名称</th>
+                        <th>模式</th>
+                        <th>机型</th>
+                        <th>COM口</th>
+                        <th>波特率</th>
+                        <th>是否启用</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr v-for="w in cjlist">
+                        <td>
+                            <input type="checkbox" class="icheckbox slave" name="cjselect" value={{w.name}}>
+                        </td>
+                        <td>{{w.order}}</td>
+                        <td>{{w.name}}</td>
+                        <td>{{cjmodes[w.mode]}}</td>
+                        <td>{{w.brand}}</td>
+                        <td>{{w.com}}</td>
+                        <td>{{w.baudrate}}</td>
+                        <td>{{cjvalids[w.valid]}}</td>
+                        <td>
+                            <div class="col-md-3 col-xs-12">
+                                <select class="form-control select cjCtlModeSelect" id="cjCtlModeSelect"  mydata="w.name">
+                                    <option value="-1">模式</option>
+                                    <option value="1">出票</option>
+                                    <option value="2">兑奖</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-xs-12">
+                                <select class="form-control select cjCtlOperatorSelect" id="cjCtlOperatorSelect">
+                                    <option value="-1">操作</option>
+                                    <option value="1">启用</option>
+                                    <option value="2">禁用</option>
+                                    <option value="3">控制外设</option>
+                                    <option value="4">复原外设</option>
+                                    <option value="5">登录</option>
+                                    <option value="6">关机</option>
+                                    <option value="7">删除</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-default btn-rounded btn-sm" v-on:click="loadCjInfoMode(w.name, 0)">修改</button>
+                        </td>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <!-- END SIMPLE DATATABLE -->
+    </div>
+
+    <div class="modal fade bs-example-modal-lg" id="modalCjEdit" data-keyboard="false" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" v-on:click="closeCjInfoMode()"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel"></h4>
+                </div>
+
+                <form class="form-horizontal">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="col-md-3 col-xs-12 control-label">彩机名称</label>
+                            <div class="col-md-6 col-xs-12">
+                                <input type="text" class="form-control" v-model.trim="cjinfo.cjname">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-3 col-xs-12 control-label">品牌型号</label>
+                            <div class="col-md-6 col-xs-12">
+                                <select id="cjedit-brand" class="form-control select">
+                                    <option v-for="k in brands" v-bind:value="k">{{k}}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-3 col-xs-12 control-label">串口名称</label>
+                            <div class="col-md-6 col-xs-12">
+                                <input type="text" class="form-control" v-model.trim="cjinfo.com">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-md-3 col-xs-12 control-label">波特率码</label>
+                            <div class="col-md-4 col-xs-12">
+                                <input class="form-control" type="number" v-model.number="cjinfo.baudrate">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" v-on:click="editCjInfo()">保存</button>
+                        <button type="button" class="btn btn-default" v-on:click="closeCjInfoMode()">关闭</button>
+                    </div>
+                </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+</div>

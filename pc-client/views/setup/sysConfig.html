@@ -1,0 +1,142 @@
+<ul class="breadcrumb">
+    <li class="active">系统配置</li>
+</ul>
+    <div class="row">
+        <div class="col-md-12">
+
+            <form class="form-horizontal">
+
+                <div class="panel panel-default tabs">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="active"><a href="#tab-defconfig" role="tab" data-toggle="tab" aria-expanded="true">基本设置</a></li>
+                        <li class=""><a href="#tab-paramconfig" role="tab" data-toggle="tab" aria-expanded="false">时间设置</a></li>
+                    </ul>
+                    <div class="panel-body tab-content">
+                        <div class="tab-pane active" id="tab-defconfig">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="col-md-3 col-xs-12 control-label">pc名称</label>
+                                    <div class="col-md-3">
+                                        <select id="def-pcname" class="form-control select">
+                                            <option value="pc001">pc001</option>
+                                            <option value="pc002">pc002</option>
+                                            <option value="pc003">pc003</option>
+                                            <option value="pc004">pc004</option>
+                                            <option value="pc005">pc005</option>
+                                            <option value="pc006">pc006</option>
+                                            <option value="pc007">pc007</option>
+                                            <option value="pc008">pc008</option>
+                                            <option value="pc009">pc009</option>
+                                            <option value="pc010">pc010</option>
+                                            <option value="pc011">pc011</option>
+                                            <option value="pc012">pc012</option>
+                                            <option value="pc013">pc013</option>
+                                            <option value="pc014">pc014</option>
+                                            <option value="pc015">pc015</option>
+                                            <option value="pc016">pc016</option>
+                                            <option value="pc017">pc017</option>
+                                            <option value="pc018">pc018</option>
+                                            <option value="pc019">pc019</option>
+                                            <option value="pc020">pc020</option>
+                                            <option value="pc021">pc021</option>
+                                            <option value="pc022">pc022</option>
+                                            <option value="pc023">pc023</option>
+                                            <option value="pc024">pc024</option>
+                                            <option value="pc025">pc025</option>
+                                            <option value="pc026">pc026</option>
+                                            <option value="pc027">pc027</option>
+                                            <option value="pc028">pc028</option>
+                                            <option value="pc029">pc029</option>
+                                            <option value="pc030">pc030</option>
+                                        </select>
+                                    </div>
+                                    <span class="help-block">修改pc名称需要重启程序</span>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-4 col-xs-12 control-label">随机按键间隔</label>
+                                    <div class="col-md-5">
+                                        <input type="checkbox" id="def-keynumflag" v-model="configinfo.def_keynumflag">
+                                        <label for="def-echoflag">{{ echoflagMap[configinfo.def_keynumflag] }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="col-md-3 col-xs-12 control-label">自动回送</label>
+                                    <div class="col-md-6">
+                                        <input type="checkbox" id="def-echoflag" v-model="configinfo.def_autoechoflag">
+                                        <label for="def-echoflag">{{ echoflagMap[configinfo.def_autoechoflag] }}</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-4 col-xs-12 control-label">兑奖回执单</label>
+                                    <div class="col-md-5">
+                                        <input type="checkbox" id="def-prizeechoflag" v-model="configinfo.def_prizeechoflag">
+                                        <label for="def-echoflag">{{ echoflagMap[configinfo.def_prizeechoflag] }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="tab-paramconfig">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="col-md-5 col-xs-12 control-label">按键间隔(毫秒)</label>
+                                    <div class="col-md-4 col-xs-12">
+                                        <input type="number" class="form-control" v-model.number="configinfo.date_keyspace">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-5 col-xs-12 control-label">相同按键间隔(毫秒)</label>
+                                    <div class="col-md-4">
+                                        <select id="date-equalspace" class="form-control select">
+                                            <option value="false">关闭</option>
+                                            <option value="D01">100</option>
+                                            <option value="D02">200</option>
+                                            <option value="D03">300</option>
+                                            <option value="D04">400</option>
+                                            <option value="D05">500</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-5 col-xs-12 control-label">打印超时(秒)</label>
+                                    <div class="col-md-4 col-xs-12">
+                                        <input type="number" class="form-control" v-model.number="configinfo.date_printtimeout">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="col-md-5 col-xs-12 control-label">数字间隔(毫秒)</label>
+                                    <div class="col-md-4 col-xs-12">
+                                        <input type="number" class="form-control" v-model.number="configinfo.date_keynumspace">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-5 col-xs-12 control-label">提前截止(秒)</label>
+                                    <div class="col-md-4 col-xs-12">
+                                        <input type="number" class="form-control" v-model.number="configinfo.date_autoendtime">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-5 col-xs-12 control-label">票之间间隔(秒)</label>
+                                    <div class="col-md-2 col-xs-12">
+                                        <input type="number" class="form-control" v-model.number="configinfo.date_ticketspaceleft">
+                                    </div>
+                                    <label class="col-md-1 col-xs-12 control-label">到</label>
+                                    <div class="col-md-2 col-xs-12">
+                                        <input type="number" class="form-control" v-model.number="configinfo.date_ticketspaceright">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <button type="button" class="btn btn-primary pull-right" v-on:click="saveInfo()">保存<span class="fa fa-floppy-o fa-right"></span></button>
+                    </div>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
